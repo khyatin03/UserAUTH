@@ -1,0 +1,73 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+}
+
+header {
+    background-color: #343a40;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+button#logoutBtn {
+    border-radius: 20px;
+    padding: 5px 15px;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    background-color: white;
+    margin: 15px 0;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card .card-title {
+    font-weight: bold;
+    color: #343a40;
+}
+
+.card .card-text {
+    margin: 10px 0;
+    color: #666;
+}
+
+.job-card {
+    background-color: #e0f7fa;
+}
+
+.location-card {
+    background-color: #ffe0b2;
+}
+
+.event-card {
+    background-color: #d1c4e9;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: #343a40;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.col-md-4, .col-md-6 {
+    display: flex;
+    justify-content: center;
+}
