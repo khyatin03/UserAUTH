@@ -4,19 +4,22 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 3000;
+
+
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-const app = express();
-const port = process.env.PORT || 3000;
+
 
 app.use(express.static('develop'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-
-mongoose.connect('', {
+// Connect to MongoDB
+mongoose.connect('mongodb+srv://khyatin2003:Ganesh%402013@cluster0.zhanlfv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -25,27 +28,29 @@ mongoose.connect('', {
 
 
 
-passport.use(new GoogleStrategy({
-  clientID: '',
-  clientSecret: '',
-  callbackURL: 'http://localhost:3000/auth/google/callback'
-},
-  function(accessToken, refreshToken, profile, done) {
-    return done(null, profile);
-  }
-));
-
+// Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET ||'',
+  secret: 'd6e1a3c182511c593e57a38192680e92c8c4fe2dd04024f64d461ae3823db7b3988d514377ac163005d2e42f4c1e47ed6ac3273b246979a22043438ec5018538',
   resave: false,
   saveUninitialized: true
 }));
 
-
-
+// Passport configuration
 app.use(passport.initialize());
 app.use(passport.session());
 
+passport.use(new GoogleStrategy({
+  clientID: '423285911400-upl52j581q5pj8m84bbuelomuqc3nld1.apps.googleusercontent.com',
+  clientSecret: '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',
+  callbackURL: 'http://localhost:3000/auth/google/callback'
+},
+  function(accessToken, refreshToken, profile, done) {
+    // Here, you can create or find the user in your database
+    // and associate the Google profile with the user
+    // For simplicity, we'll just return the profile
+    return done(null, profile);
+  }
+));
 
 passport.serializeUser(function(user, done) {
   done(null, user);
@@ -55,6 +60,7 @@ passport.deserializeUser(function(user, done) {
   done(null, user);
 });
 
+// Routes
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
@@ -65,50 +71,27 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   function(req, res) {
-    res.redirect('/page1.html');
+    // Successful authentication, redirect to the index page
+    res.sendFile(__dirname + '/page1.html')
   });
 
-// Serve static files from the "public" directory
-app.use(express.static(__dirname));
-
-// Serve index.html on the root route
-app.get('/index', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-  app.post('/index', async (req, res) => {
-    try {
-      const { email, password, role } = req.body;
-      const user = await User.findOne({ email });
-      console.log(user);
-      if (!user || !await bcrypt.compare(password, user.password) || user.role !== role) {
-        return res.status(401).json({ message: 'Invalid email, password, or role' });
-      }
-      const token = jwt.sign({ userId: user._id, role: user.role }, 'your_secret_key', { expiresIn: '1h' });
-      res.json({ token });
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  });
+  app.use(express.static(__dirname));
 
 
 
 
-app.get('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      console.error('Error logging out:', err);
-      return res.status(500).send('Error logging out');
-    }
-    res.clearCookie('token');
-    req.session.destroy((err) => {
+  app.get('/logout', function(req, res) {
+    req.logout(function(err) {
       if (err) {
+        // Handle error
+        console.error('Error logging out:', err);
         return res.status(500).send('Error logging out');
       }
-      res.redirect('/');
+      // Successful logout
+      res.redirect('index.html'); // Redirect to the index page (or any other desired page)
     });
   });
-});
+  
 
 
 
@@ -116,11 +99,17 @@ app.get('/logout', (req, res) => {
 
 
 
+
+
+
+
+// Define the Mongoose schemas and models
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, required: true, default: 'user' }
+  
 });
 
 const roleSchema = new mongoose.Schema({
@@ -138,6 +127,8 @@ const User = mongoose.model('User', userSchema);
 const Role = mongoose.model('Role', roleSchema);
 const Service = mongoose.model('Service', serviceSchema);
 
+// Middleware
+// Authentication middleware
 const authenticate = async (req, res, next) => {
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -153,6 +144,7 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+// Authorization middleware
 const authorize = (permissions = []) => {
   return async (req, res, next) => {
     try {
@@ -167,6 +159,7 @@ const authorize = (permissions = []) => {
   };
 };
 
+// Seed predefined roles and permissions
 const seedRoles = async () => {
   try {
     const adminRole = await Role.findOne({ name: 'admin' });
@@ -194,6 +187,7 @@ const seedRoles = async () => {
   }
 };
 
+// Routes
 app.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -207,6 +201,22 @@ app.post('/register', async (req, res) => {
 });
 
 
+
+
+app.post('/login', async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+    const user = await User.findOne({ email });
+    console.log(user);
+    if (!user || password !== user.password || user.role !== role) {
+      return res.status(401).json({ message: 'Invalid email, password, or role' });
+    }
+    const token = jwt.sign({ userId: user._id, role: user.role }, 'your_secret_key', { expiresIn: '1h' });
+    res.json({ token });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
 app.get('/profile', authenticate, (req, res) => {
   res.json({
