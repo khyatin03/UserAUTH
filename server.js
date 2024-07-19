@@ -30,7 +30,7 @@ mongoose.connect('mongodb+srv://khyatin2003:Ganesh%402013@cluster0.zhanlfv.mongo
 
 // Session configuration
 app.use(session({
-  secret: 'd6e1a3c182511c593e57a38192680e92c8c4fe2dd04024f64d461ae3823db7b3988d514377ac163005d2e42f4c1e47ed6ac3273b246979a22043438ec5018538',
+  secret: '',
   resave: false,
   saveUninitialized: true
 }));
@@ -40,8 +40,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(new GoogleStrategy({
-  clientID: '423285911400-upl52j581q5pj8m84bbuelomuqc3nld1.apps.googleusercontent.com',
-  clientSecret: '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',
+  clientID: '',
+  clientSecret: '',
   callbackURL: 'http://localhost:3000/auth/google/callback'
 },
   function(accessToken, refreshToken, profile, done) {
