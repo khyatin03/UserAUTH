@@ -11,6 +11,8 @@ const port = process.env.PORT || 3000;
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
+
 
 
 
@@ -52,6 +54,21 @@ passport.use(new GoogleStrategy({
   }
 ));
 
+
+passport.use(new FacebookStrategy({
+  clientID: '',
+  clientSecret: '',
+  callbackURL: 'http://localhost:3000/auth/facebook/callback',
+},
+function(accessToken, refreshToken, profile, done) {
+  // Here, you can create or find the user in your database
+  // and associate the Google profile with the user
+  // For simplicity, we'll just return the profile
+  return done(null, profile);
+}
+));
+
+
 passport.serializeUser(function(user, done) {
   done(null, user);
 });
@@ -77,6 +94,14 @@ app.get('/auth/google/callback',
 
   app.use(express.static(__dirname));
 
+app.get('/auth/facebook',
+    passport.authenticate('facebook'));
+  
+  app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', { failureRedirect: '/' }),
+    function(req, res) {
+      res.sendFile(path.join(__dirname, 'page1.html'));
+    });
 
 
 
