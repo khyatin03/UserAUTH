@@ -89,7 +89,7 @@ app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   function(req, res) {
     // Successful authentication, redirect to the index page
-    res.sendFile(__dirname + '/page1.html')
+    res.redirect('/page1.html');
   });
 
   app.use(express.static(__dirname));
@@ -100,7 +100,7 @@ app.get('/auth/facebook',
   app.get('/auth/facebook/callback',
     passport.authenticate('facebook', { failureRedirect: '/' }),
     function(req, res) {
-      res.sendFile(path.join(__dirname, 'page1.html'));
+      res.redirect('/page1.html');
     });
 
 
